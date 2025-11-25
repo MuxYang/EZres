@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(EZres VERSION 1.0.0 DESCRIPTION "Screen Resolution and Scaling Management Tool")
+project(EZres VERSION 1.0.1 DESCRIPTION "Screen Resolution and Scaling Management Tool")
 
 # 设置项目信息
 set(PROJECT_AUTHOR "Your Name")
