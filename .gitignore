@@ -1,0 +1,27 @@
+# Build directories
+build/
+_codeql_build_dir/
+cmake-build-*/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Executables
+*.exe
+*.out
+
+# Object files
+*.o
+*.obj
+
+# IDE files
+.vs/
+.vscode/
+*.suo
+*.user
+
+# CodeQL files
+_codeql_detected_source_root

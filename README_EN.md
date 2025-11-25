@@ -12,12 +12,16 @@ A lightweight command-line tool for quickly changing Windows screen resolution a
 - View current display settings
 - List all available resolutions
 - Immediate effect (for resolution)
+- Resolution validation (prevents setting unsupported resolutions)
+- Force mode (skip validation)
+- Bilingual support (auto-detects system language: English/Chinese)
 
 ## Command Line Options
 
 | Option | Description | Example |
 |--------|-------------|---------|
 | `-r <width> <height> [refresh]` | Set screen resolution | `EZres.exe -r 1920 1080 60` |
+| `-f -r <width> <height> [refresh]` | Force set resolution (skip validation) | `EZres.exe -f -r 1920 1080` |
 | `-s <percentage>` | Set DPI scaling (100-500%) | `EZres.exe -s 125` |
 | `-l` | Display current settings | `EZres.exe -l` |
 | `-a` | List all available resolutions | `EZres.exe -a` |
