@@ -109,6 +109,18 @@ public:
             "  EZres.exe -r <width> <height> [refresh]  - Set resolution";
     }
     
+    std::string usageForce() const {
+        return lang == Language::ZH ?
+            "  EZres.exe -f -r <宽度> <高度> [刷新率] - 强制设置分辨率（跳过验证）" :
+            "  EZres.exe -f -r <width> <height> [refresh] - Force set resolution (skip validation)";
+    }
+    
+    std::string forceWarning() const {
+        return lang == Language::ZH ?
+            "警告：正在强制设置分辨率，跳过验证..." :
+            "Warning: Force setting resolution, skipping validation...";
+    }
+    
     std::string usageScaling() const {
         return lang == Language::ZH ?
             "  EZres.exe -s <百分比>              - 设置缩放比例 (100-500)" :
@@ -153,6 +165,12 @@ public:
         return lang == Language::ZH ?
             "  EZres.exe -s 125                   - 设置缩放为125%" :
             "  EZres.exe -s 125                   - Set scaling to 125%";
+    }
+    
+    std::string example4() const {
+        return lang == Language::ZH ?
+            "  EZres.exe -f -r 1920 1080          - 强制设置为1920x1080" :
+            "  EZres.exe -f -r 1920 1080          - Force set to 1920x1080";
     }
 };
 
@@ -290,6 +308,7 @@ public:
 void ShowUsage() {
     std::cout << i18n.usage() << std::endl;
     std::cout << i18n.usageResolution() << std::endl;
+    std::cout << i18n.usageForce() << std::endl;
     std::cout << i18n.usageScaling() << std::endl;
     std::cout << i18n.usageList() << std::endl;
     std::cout << i18n.usageAll() << std::endl;
@@ -299,6 +318,7 @@ void ShowUsage() {
     std::cout << i18n.example1() << std::endl;
     std::cout << i18n.example2() << std::endl;
     std::cout << i18n.example3() << std::endl;
+    std::cout << i18n.example4() << std::endl;
 }
 
 int main(int argc, char* argv[]) {
@@ -312,6 +332,15 @@ int main(int argc, char* argv[]) {
     
     std::string command = argv[1];
     
+    // Check for force flag
+    bool forceMode = false;
+    int argOffset = 0;
+    if (command == "-f" && argc >= 3) {
+        forceMode = true;
+        command = argv[2];
+        argOffset = 1;
+    }
+    
     if (command == "-h" || command == "--help") {
         ShowUsage();
         return 0;
@@ -324,20 +353,24 @@ int main(int argc, char* argv[]) {
         DisplayManager::ListAvailableResolutions();
         return 0;
     }
-    else if (command == "-r" && argc >= 4) {
-        int width = std::stoi(argv[2]);
-        int height = std::stoi(argv[3]);
-        int refreshRate = (argc >= 5) ? std::stoi(argv[4]) : 0;
+    else if (command == "-r" && argc >= (4 + argOffset)) {
+        int width = std::stoi(argv[2 + argOffset]);
+        int height = std::stoi(argv[3 + argOffset]);
+        int refreshRate = (argc >= (5 + argOffset)) ? std::stoi(argv[4 + argOffset]) : 0;
         
-        // Validate the resolution before attempting to change
-        auto validationResult = DisplayManager::ValidateResolution(width, height, refreshRate);
-        if (validationResult != DisplayManager::ValidationResult::VALID) {
-            if (validationResult == DisplayManager::ValidationResult::RESOLUTION_NOT_SUPPORTED) {
-                std::cout << i18n.resolutionNotSupported() << std::endl;
-            } else {
-                std::cout << i18n.resolutionWithRefreshNotSupported() << std::endl;
+        // Validate the resolution before attempting to change (unless force mode)
+        if (!forceMode) {
+            auto validationResult = DisplayManager::ValidateResolution(width, height, refreshRate);
+            if (validationResult != DisplayManager::ValidationResult::VALID) {
+                if (validationResult == DisplayManager::ValidationResult::RESOLUTION_NOT_SUPPORTED) {
+                    std::cout << i18n.resolutionNotSupported() << std::endl;
+                } else {
+                    std::cout << i18n.resolutionWithRefreshNotSupported() << std::endl;
+                }
+                return 1;
             }
-            return 1;
+        } else {
+            std::cout << i18n.forceWarning() << std::endl;
         }
         
         std::cout << i18n.settingResolution() << width << "x" << height;
@@ -354,8 +387,8 @@ int main(int argc, char* argv[]) {
             return 1;
         }
     }
-    else if (command == "-s" && argc >= 3) {
-        int percentage = std::stoi(argv[2]);
+    else if (command == "-s" && argc >= (3 + argOffset)) {
+        int percentage = std::stoi(argv[2 + argOffset]);
         
         std::cout << i18n.settingScaling() << percentage << "%..." << std::endl;
         
