@@ -20,6 +20,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <stdexcept>
 
 // Language support
 enum class Language { EN, ZH };
@@ -70,6 +71,18 @@ public:
         return lang == Language::ZH ?
             "错误：不支持该分辨率和刷新率的组合。请使用 -a 参数查看可用分辨率列表。" :
             "Error: Unsupported resolution and refresh rate combination. Use -a to see available resolutions.";
+    }
+    
+    std::string invalidNumber() const {
+        return lang == Language::ZH ?
+            "错误：无效的数字参数。" :
+            "Error: Invalid numeric argument.";
+    }
+    
+    std::string invalidResolutionValues() const {
+        return lang == Language::ZH ?
+            "错误：分辨率和刷新率必须为正数。" :
+            "Error: Resolution and refresh rate must be positive numbers.";
     }
     
     // Messages for scaling operations
@@ -354,9 +367,21 @@ int main(int argc, char* argv[]) {
         return 0;
     }
     else if (command == "-r" && argc >= (4 + argOffset)) {
-        int width = std::stoi(argv[2 + argOffset]);
-        int height = std::stoi(argv[3 + argOffset]);
-        int refreshRate = (argc >= (5 + argOffset)) ? std::stoi(argv[4 + argOffset]) : 0;
+        int width, height, refreshRate;
+        try {
+            width = std::stoi(argv[2 + argOffset]);
+            height = std::stoi(argv[3 + argOffset]);
+            refreshRate = (argc >= (5 + argOffset)) ? std::stoi(argv[4 + argOffset]) : 0;
+        } catch (const std::exception&) {
+            std::cout << i18n.invalidNumber() << std::endl;
+            return 1;
+        }
+        
+        // Validate that values are positive
+        if (width <= 0 || height <= 0 || refreshRate < 0) {
+            std::cout << i18n.invalidResolutionValues() << std::endl;
+            return 1;
+        }
         
         // Validate the resolution before attempting to change (unless force mode)
         if (!forceMode) {
@@ -388,7 +413,13 @@ int main(int argc, char* argv[]) {
         }
     }
     else if (command == "-s" && argc >= (3 + argOffset)) {
-        int percentage = std::stoi(argv[2 + argOffset]);
+        int percentage;
+        try {
+            percentage = std::stoi(argv[2 + argOffset]);
+        } catch (const std::exception&) {
+            std::cout << i18n.invalidNumber() << std::endl;
+            return 1;
+        }
         
         std::cout << i18n.settingScaling() << percentage << "%..." << std::endl;
         
