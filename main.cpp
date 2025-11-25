@@ -21,6 +21,9 @@
 #include <string>
 #include <vector>
 #include <stdexcept>
+#include <map>
+#include <set>
+#include <algorithm>
 
 // Language support
 enum class Language { EN, ZH };
@@ -308,12 +311,32 @@ public:
         ZeroMemory(&devMode, sizeof(devMode));
         devMode.dmSize = sizeof(devMode);
         
+        // Use a map to store resolutions with their refresh rates
+        // Key: pair<width, height>, Value: set of refresh rates
+        std::map<std::pair<int, int>, std::set<int>> resolutionMap;
+        
         for (int i = 0; EnumDisplaySettings(NULL, i, &devMode); i++) {
-            std::cout << devMode.dmPelsWidth << "x" << devMode.dmPelsHeight;
-            if (devMode.dmDisplayFrequency > 0) {
-                std::cout << " @" << devMode.dmDisplayFrequency << "Hz";
+            int width = devMode.dmPelsWidth;
+            int height = devMode.dmPelsHeight;
+            int refreshRate = devMode.dmDisplayFrequency;
+            
+            auto key = std::make_pair(width, height);
+            resolutionMap[key].insert(refreshRate);
+        }
+        
+        // Output sorted resolutions
+        for (const auto& entry : resolutionMap) {
+            int width = entry.first.first;
+            int height = entry.first.second;
+            const auto& refreshRates = entry.second;
+            
+            for (int refreshRate : refreshRates) {
+                std::cout << width << "x" << height;
+                if (refreshRate > 0) {
+                    std::cout << " @" << refreshRate << "Hz";
+                }
+                std::cout << std::endl;
             }
-            std::cout << std::endl;
         }
     }
 };
