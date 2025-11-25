@@ -20,7 +20,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <set>
 
 // Language support
 enum class Language { EN, ZH };
@@ -189,42 +188,6 @@ private:
         return false;
     }
     
-    // Structure to store resolution info for validation
-    struct ResolutionInfo {
-        int width;
-        int height;
-        int refreshRate;
-        
-        bool operator<(const ResolutionInfo& other) const {
-            if (width != other.width) return width < other.width;
-            if (height != other.height) return height < other.height;
-            return refreshRate < other.refreshRate;
-        }
-    };
-    
-    // Check if a resolution (with optional refresh rate) is supported
-    static bool IsResolutionSupported(int width, int height, int refreshRate = 0) {
-        DEVMODE devMode;
-        ZeroMemory(&devMode, sizeof(devMode));
-        devMode.dmSize = sizeof(devMode);
-        
-        for (int i = 0; EnumDisplaySettings(NULL, i, &devMode); i++) {
-            if (devMode.dmPelsWidth == (DWORD)width && 
-                devMode.dmPelsHeight == (DWORD)height) {
-                // If refresh rate is specified, check it too
-                if (refreshRate > 0) {
-                    if (devMode.dmDisplayFrequency == (DWORD)refreshRate) {
-                        return true;
-                    }
-                } else {
-                    // No refresh rate specified, resolution alone is valid
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
 public:
     // Validation result enum
     enum class ValidationResult {
